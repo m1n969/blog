@@ -111,16 +111,16 @@ permalink: /write/
   <!-- ═══ 日课 ═══ -->
   <div class="form-section active" id="form-daily">
     <h3 class="sec">必填</h3>
-    <label class="field"><span>日期</span><input type="date" id="d-date"></label>
+    <label class="field"><span>记录哪一天（默认昨天，早上写昨天的日课）</span><input type="date" id="d-date"></label>
     <div class="row">
-      <label class="field"><span>昨晚入睡</span><input type="time" id="d-sleep"></label>
-      <label class="field"><span>今天起床</span><input type="time" id="d-wake"></label>
+      <label class="field"><span>那晚入睡</span><input type="time" id="d-sleep"></label>
+      <label class="field"><span>次日起床</span><input type="time" id="d-wake"></label>
     </div>
     <div class="row">
       <label class="field"><span>睡眠质量</span><select id="d-sq"><option>很好</option><option selected>普通</option><option>差</option></select></label>
       <label class="field"><span>精神状态</span><select id="d-energy"><option>很好</option><option selected>普通</option><option>差</option></select></label>
     </div>
-    <label class="field"><span>今日一句</span><textarea id="d-oneline" rows="2" placeholder="今天最想留下的一句话"></textarea></label>
+    <label class="field"><span>一句话（那天最想留下的一句话）</span><textarea id="d-oneline" rows="2" placeholder="写一句就好"></textarea></label>
     <hr>
     <h3 class="sec">选填 · 今天想写哪些？</h3>
     <div class="checks" id="d-checks">
@@ -231,8 +231,12 @@ function saveToken() {
   if (t) { localStorage.setItem('gh_token', t); document.getElementById('setup').style.display = 'none'; alert('Token 已保存！'); }
 }
 if (getToken()) document.getElementById('setup').style.display = 'none';
-// Default date to today
-document.getElementById('d-date').value = now().ds;
+// Default date to yesterday (早上写昨天)
+function yesterday() {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+document.getElementById('d-date').value = yesterday();
 
 function now() {
   const d = new Date();
@@ -246,7 +250,7 @@ function buildDaily() {
   const ds = val('d-date') || now().ds;
   const [, mm, dd] = ds.split('-').map(Number);
   let md = `---\nlayout: post\ntitle: "${mm}月${dd}日"\ndate: ${ds}\ncategory: 日课\n---\n\n`;
-  md += `## 睡眠记录\n\n昨晚入睡：${val('d-sleep')||'?'}\n\n今天起床：${val('d-wake')||'?'}\n\n`;
+  md += `## 睡眠记录\n\n入睡：${val('d-sleep')||'?'}\n\n起床：${val('d-wake')||'?'}\n\n`;
   md += `睡眠质量：${val('d-sq')}\n\n精神状态：${val('d-energy')}\n\n`;
   md += `## 今日一句\n\n${val('d-oneline')||'（无）'}\n`;
   document.querySelectorAll('.optional.show').forEach(div => {
