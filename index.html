@@ -3,11 +3,7 @@ layout: default
 title: 日课
 ---
 
-{% comment %} ── 统计 ── {% endcomment %}
-{% assign total = site.posts | where_exp: "p", "p.category == '日课' or p.categories contains '日课'" | size %}
-{% if total == 0 %}
-  {% assign total = site.posts.size %}
-{% endif %}
+{% assign total = site.posts.size %}
 
 {% assign this_month = site.time | date: "%Y-%m" %}
 {% assign month_count = 0 %}
@@ -18,7 +14,6 @@ title: 日课
   {% endif %}
 {% endfor %}
 
-{% comment %} ── 连续天数（简化计算：从最近一篇往前数连续日期） ── {% endcomment %}
 {% assign streak = 0 %}
 {% assign today_stamp = site.time | date: "%s" | plus: 0 %}
 {% assign check_stamp = today_stamp %}
@@ -48,7 +43,6 @@ title: 日课
   </div>
 </div>
 
-{% comment %} ── 最近一篇 ── {% endcomment %}
 {% if site.posts.size > 0 %}
 <div class="latest-entry">
   <div class="latest-label">最近一篇</div>
@@ -60,14 +54,12 @@ title: 日课
 </div>
 {% endif %}
 
-{% comment %} ── 固定提醒 ── {% endcomment %}
 <div class="index-reminder">
   <p>断了也可以继续，不必补罪。</p>
   <p>无事也可记。无事之日，最见本性。</p>
   <p>写一句也算一日。</p>
 </div>
 
-{% comment %} ── 最近日课 ── {% endcomment %}
 {% if site.posts.size > 0 %}
 <div class="section-label">最近日课</div>
 <ul class="post-list">
