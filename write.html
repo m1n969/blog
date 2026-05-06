@@ -1,0 +1,266 @@
+---
+layout: null
+title: 写日课
+permalink: /write/
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>写日课 — 不断线</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Noto Serif SC", serif; background: #faf9f6; color: #2c2c2c; line-height: 1.8; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #aaa; margin-bottom: 24px; }
+  label.field { display: block; margin-bottom: 16px; }
+  label.field span { display: block; font-size: 13px; color: #888; margin-bottom: 4px; }
+  input[type="text"], input[type="date"], input[type="time"], textarea, select {
+    width: 100%; padding: 10px 12px; border: 1px solid #e0ddd6; border-radius: 6px;
+    font: inherit; font-size: 15px; background: #fff; color: #2c2c2c;
+    transition: border 0.2s;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #6b8f71; }
+  textarea { resize: vertical; min-height: 60px; }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+  hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+  .section-picker { margin-bottom: 20px; }
+  .section-picker h3 { font-size: 14px; color: #999; margin-bottom: 10px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .checks label {
+    font-size: 13px; padding: 6px 14px; border-radius: 20px;
+    border: 1px solid #e0ddd6; cursor: pointer; transition: all 0.2s;
+    user-select: none;
+  }
+  .checks label:has(input:checked) { background: #6b8f71; color: #fff; border-color: #6b8f71; }
+  .checks input { display: none; }
+  .optional { display: none; }
+  .optional.show { display: block; }
+  .btn {
+    display: block; width: 100%; padding: 14px; border: none; border-radius: 8px;
+    font: inherit; font-size: 16px; font-weight: 600; cursor: pointer;
+    background: #6b8f71; color: #fff; transition: background 0.2s;
+    margin-top: 24px;
+  }
+  .btn:hover { background: #5a7d60; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .msg { margin-top: 12px; font-size: 14px; text-align: center; }
+  .msg.ok { color: #6b8f71; }
+  .msg.err { color: #a06060; }
+  .setup { margin-bottom: 24px; padding: 16px; background: #f5f3ef; border-radius: 8px; font-size: 13px; }
+  .setup input { margin-top: 8px; }
+  .setup a { color: #6b8f71; }
+  .quiet { font-size: 12px; color: #bbb; text-align: center; margin-top: 16px; }
+  .back { font-size: 13px; color: #aaa; display: inline-block; margin-bottom: 20px; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1c1b19; color: #d8d4cc; }
+    input[type="text"], input[type="date"], input[type="time"], textarea, select {
+      background: #2a2926; border-color: #3a3836; color: #d8d4cc;
+    }
+    .setup { background: #242320; }
+    .checks label { border-color: #3a3836; color: #999; }
+    .checks label:has(input:checked) { background: #6b8f71; color: #fff; border-color: #6b8f71; }
+    hr { border-top-color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="back">&larr; 回到首页</a>
+  <h1>写日课</h1>
+  <div class="sub">写一句也算一日。</div>
+
+  <!-- GitHub Token 设置（首次需要） -->
+  <div class="setup" id="setup">
+    <b>首次使用需要设置 GitHub Token</b>（只需一次）<br>
+    <a href="https://github.com/settings/tokens/new?scopes=repo&description=shrimpdiary" target="_blank">点这里生成 Token</a>
+    → 勾选 repo → 点 Generate → 复制粘贴到下面：
+    <input type="text" id="token-input" placeholder="ghp_xxxxxxxxxxxx">
+    <button onclick="saveToken()" style="margin-top:8px;padding:6px 16px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">保存</button>
+  </div>
+
+  <!-- 必填：睡眠 -->
+  <h3 style="font-size:14px;color:#6b8f71;margin-bottom:12px;">必填</h3>
+
+  <div class="row">
+    <label class="field"><span>昨晚入睡</span><input type="time" id="sleep-time"></label>
+    <label class="field"><span>今天起床</span><input type="time" id="wake-time"></label>
+  </div>
+  <div class="row">
+    <label class="field"><span>睡眠质量</span>
+      <select id="sleep-quality"><option>很好</option><option selected>普通</option><option>差</option></select>
+    </label>
+    <label class="field"><span>精神状态</span>
+      <select id="energy"><option>很好</option><option selected>普通</option><option>差</option></select>
+    </label>
+  </div>
+
+  <!-- 必填：今日一句 -->
+  <label class="field"><span>今日一句（今天最想留下的一句话）</span><textarea id="one-line" rows="2" placeholder="写一句就好"></textarea></label>
+
+  <hr>
+
+  <!-- 选填 -->
+  <div class="section-picker">
+    <h3>选填 · 今天想写哪些？</h3>
+    <div class="checks">
+      <label><input type="checkbox" data-section="event"> 今日记事</label>
+      <label><input type="checkbox" data-section="stuck"> 今日卡点</label>
+      <label><input type="checkbox" data-section="good"> 今日一善</label>
+      <label><input type="checkbox" data-section="learn"> 今日所得</label>
+      <label><input type="checkbox" data-section="escape"> 今日一逃</label>
+      <label><input type="checkbox" data-section="fear"> 今日一惧</label>
+      <label><input type="checkbox" data-section="anger"> 今日一怒</label>
+      <label><input type="checkbox" data-section="envy"> 今日一羡</label>
+      <label><input type="checkbox" data-section="thought"> 今日一念</label>
+      <label><input type="checkbox" data-section="body"> 今日身体</label>
+      <label><input type="checkbox" data-section="relation"> 今日关系</label>
+      <label><input type="checkbox" data-section="reading"> 今日读/看</label>
+      <label><input type="checkbox" data-section="tomorrow"> 明日一事</label>
+      <label><input type="checkbox" data-section="warning"> 一句话自警</label>
+    </div>
+  </div>
+
+  <div class="optional" data-id="event"><label class="field"><span>今日记事</span><textarea placeholder="今天发生了什么小事？"></textarea></label></div>
+  <div class="optional" data-id="stuck"><label class="field"><span>今日卡点</span><textarea placeholder="今天卡住我的问题是什么？"></textarea></label></div>
+  <div class="optional" data-id="good"><label class="field"><span>今日一善</span><textarea placeholder="今天做得还可以的一点是什么？"></textarea></label></div>
+  <div class="optional" data-id="learn"><label class="field"><span>今日所得</span><textarea placeholder="今天得到的一个认识或观察是什么？"></textarea></label></div>
+  <div class="optional" data-id="escape"><label class="field"><span>今日一逃</span><textarea placeholder="今天逃避了什么？"></textarea></label></div>
+  <div class="optional" data-id="fear"><label class="field"><span>今日一惧</span><textarea placeholder="今天害怕什么？"></textarea></label></div>
+  <div class="optional" data-id="anger"><label class="field"><span>今日一怒</span><textarea placeholder="今天为什么生气？"></textarea></label></div>
+  <div class="optional" data-id="envy"><label class="field"><span>今日一羡</span><textarea placeholder="今天羡慕了谁/什么？"></textarea></label></div>
+  <div class="optional" data-id="thought"><label class="field"><span>今日一念</span><textarea placeholder="今天反复出现的念头是什么？"></textarea></label></div>
+  <div class="optional" data-id="body"><label class="field"><span>今日身体</span><textarea placeholder="身体有什么信号？"></textarea></label></div>
+  <div class="optional" data-id="relation"><label class="field"><span>今日关系</span><textarea placeholder="和别人相处中有什么触动？"></textarea></label></div>
+  <div class="optional" data-id="reading"><label class="field"><span>今日读/看</span><textarea placeholder="今天看到/读到什么让我有想法？"></textarea></label></div>
+  <div class="optional" data-id="tomorrow"><label class="field"><span>明日一事</span><textarea placeholder="明天只做的一件小事是什么？"></textarea></label></div>
+  <div class="optional" data-id="warning"><label class="field"><span>一句话自警</span><textarea placeholder="从今天的问题里提炼一句提醒自己的话"></textarea></label></div>
+
+  <button class="btn" id="publish" onclick="publish()">发布日课</button>
+  <div class="msg" id="msg"></div>
+  <div class="quiet">写完点发布，网站会在 1 分钟内自动更新。</div>
+</div>
+
+<script>
+const REPO = "m1n969/blog";
+const SECTION_TITLES = {
+  event: "今日记事", stuck: "今日卡点", good: "今日一善", learn: "今日所得",
+  escape: "今日一逃", fear: "今日一惧", anger: "今日一怒", envy: "今日一羡",
+  thought: "今日一念", body: "今日身体", relation: "今日关系", reading: "今日读/看",
+  tomorrow: "明日一事", warning: "一句话自警"
+};
+
+// Toggle optional sections
+document.querySelectorAll('[data-section]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const el = document.querySelector(`.optional[data-id="${cb.dataset.section}"]`);
+    if (el) el.classList.toggle('show', cb.checked);
+  });
+});
+
+function getToken() { return localStorage.getItem('gh_token') || ''; }
+
+function saveToken() {
+  const t = document.getElementById('token-input').value.trim();
+  if (t) {
+    localStorage.setItem('gh_token', t);
+    document.getElementById('setup').style.display = 'none';
+    alert('Token 已保存！');
+  }
+}
+
+// Hide setup if token exists
+if (getToken()) document.getElementById('setup').style.display = 'none';
+
+function buildMarkdown() {
+  const now = new Date();
+  const mm = now.getMonth() + 1;
+  const dd = now.getDate();
+  const dateStr = `${now.getFullYear()}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+
+  const sleep = document.getElementById('sleep-time').value || '?';
+  const wake = document.getElementById('wake-time').value || '?';
+  const sq = document.getElementById('sleep-quality').value;
+  const energy = document.getElementById('energy').value;
+  const oneLine = document.getElementById('one-line').value.trim() || '（无）';
+
+  let md = `---\nlayout: post\ntitle: "${mm}月${dd}日"\ndate: ${dateStr}\ncategory: 日课\n---\n\n`;
+  md += `## 睡眠记录\n\n昨晚入睡：${sleep}\n\n今天起床：${wake}\n\n睡眠质量：${sq}\n\n精神状态：${energy}\n\n`;
+  md += `## 今日一句\n\n${oneLine}\n`;
+
+  // Optional sections
+  document.querySelectorAll('.optional.show').forEach(div => {
+    const id = div.dataset.id;
+    const title = SECTION_TITLES[id] || id;
+    const text = div.querySelector('textarea').value.trim();
+    if (text) {
+      md += `\n---\n\n## ${title}\n\n${text}\n`;
+    }
+  });
+
+  return { md, dateStr, mm, dd };
+}
+
+async function publish() {
+  const token = getToken();
+  if (!token) { alert('请先设置 GitHub Token（页面顶部）'); return; }
+
+  const btn = document.getElementById('publish');
+  const msg = document.getElementById('msg');
+  btn.disabled = true;
+  msg.textContent = '发布中…';
+  msg.className = 'msg';
+
+  const { md, dateStr } = buildMarkdown();
+  const filename = `_posts/${dateStr}-日课.md`;
+  const content = btoa(unescape(encodeURIComponent(md)));
+
+  try {
+    // Check if file exists
+    let sha = null;
+    const checkRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${filename}`, {
+      headers: { Authorization: `token ${token}` }
+    });
+    if (checkRes.ok) {
+      const existing = await checkRes.json();
+      sha = existing.sha;
+    }
+
+    const body = {
+      message: `日课 ${dateStr}`,
+      content,
+      branch: "main"
+    };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${filename}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `token ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      msg.textContent = '发布成功！1 分钟后网站自动更新。';
+      msg.className = 'msg ok';
+    } else {
+      const err = await res.json();
+      msg.textContent = '发布失败：' + (err.message || res.status);
+      msg.className = 'msg err';
+    }
+  } catch (e) {
+    msg.textContent = '网络错误：' + e.message;
+    msg.className = 'msg err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

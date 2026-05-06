@@ -1,0 +1,169 @@
+---
+layout: null
+title: 管理
+permalink: /manage/
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理 — 不断线</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Noto Serif SC", serif; background: #faf9f6; color: #2c2c2c; line-height: 1.8; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #aaa; margin-bottom: 24px; }
+  .back { font-size: 13px; color: #aaa; display: inline-block; margin-bottom: 20px; }
+  .post-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid #f0eeea;
+  }
+  .post-item:last-child { border-bottom: none; }
+  .post-name { font-size: 14px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .del-btn {
+    font-size: 12px; padding: 4px 12px; border-radius: 4px;
+    border: 1px solid #e0ddd6; background: #fff; color: #a06060;
+    cursor: pointer; flex-shrink: 0; margin-left: 12px; transition: all 0.2s;
+  }
+  .del-btn:hover { background: #a06060; color: #fff; border-color: #a06060; }
+  .edit-btn {
+    font-size: 12px; padding: 4px 12px; border-radius: 4px;
+    border: 1px solid #e0ddd6; background: #fff; color: #6b8f71;
+    cursor: pointer; flex-shrink: 0; margin-left: 8px; transition: all 0.2s;
+  }
+  .edit-btn:hover { background: #6b8f71; color: #fff; border-color: #6b8f71; }
+  .loading { color: #aaa; font-size: 14px; padding: 40px 0; text-align: center; }
+  .msg { margin-top: 12px; font-size: 14px; text-align: center; color: #6b8f71; }
+  .setup { margin-bottom: 24px; padding: 16px; background: #f5f3ef; border-radius: 8px; font-size: 13px; }
+  .setup input { width: 100%; margin-top: 8px; padding: 8px 12px; border: 1px solid #e0ddd6; border-radius: 6px; font: inherit; font-size: 14px; }
+  .setup a { color: #6b8f71; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .tabs button { font: inherit; font-size: 13px; padding: 6px 16px; border-radius: 20px; border: 1px solid #e0ddd6; background: #fff; cursor: pointer; }
+  .tabs button.active { background: #6b8f71; color: #fff; border-color: #6b8f71; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1c1b19; color: #d8d4cc; }
+    .post-item { border-bottom-color: #2a2a28; }
+    .del-btn { background: #2a2926; border-color: #3a3836; }
+    .edit-btn { background: #2a2926; border-color: #3a3836; }
+    .setup { background: #242320; }
+    .setup input { background: #2a2926; border-color: #3a3836; color: #d8d4cc; }
+    .tabs button { background: #2a2926; border-color: #3a3836; color: #999; }
+    .tabs button.active { background: #6b8f71; color: #fff; border-color: #6b8f71; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="back">&larr; 回到首页</a>
+  <h1>管理文章</h1>
+  <div class="sub">编辑或删除已发布的日课。</div>
+
+  <div class="setup" id="setup" style="display:none;">
+    <b>需要 GitHub Token</b><br>
+    <a href="https://github.com/settings/tokens/new?scopes=repo&description=shrimpdiary" target="_blank">点这里生成 Token</a>
+    → 勾选 repo → 复制粘贴：
+    <input type="text" id="token-input" placeholder="ghp_xxxxxxxxxxxx">
+    <button onclick="saveToken()" style="margin-top:8px;padding:6px 16px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">保存</button>
+  </div>
+
+  <div class="tabs">
+    <button class="active" onclick="loadFolder('_posts', this)">日课</button>
+    <button onclick="loadFolder('_weekly', this)">周省</button>
+    <button onclick="loadFolder('_monthly', this)">月省</button>
+  </div>
+
+  <div id="list"><div class="loading">加载中…</div></div>
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+const REPO = "m1n969/blog";
+
+function getToken() { return localStorage.getItem('gh_token') || ''; }
+function saveToken() {
+  const t = document.getElementById('token-input').value.trim();
+  if (t) { localStorage.setItem('gh_token', t); location.reload(); }
+}
+
+if (!getToken()) {
+  document.getElementById('setup').style.display = 'block';
+}
+
+async function loadFolder(folder, btn) {
+  if (btn) {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const token = getToken();
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="loading">加载中…</div>';
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${folder}`, {
+      headers: token ? { Authorization: `token ${token}` } : {}
+    });
+    if (!res.ok) throw new Error(res.status);
+    const files = await res.json();
+
+    if (!files.length) {
+      list.innerHTML = '<div class="loading">还没有内容。</div>';
+      return;
+    }
+
+    // Sort by name descending (newest first)
+    files.sort((a, b) => b.name.localeCompare(a.name));
+
+    list.innerHTML = files.map(f => `
+      <div class="post-item" data-path="${f.path}" data-sha="${f.sha}">
+        <span class="post-name">${f.name.replace('.md', '')}</span>
+        <button class="edit-btn" onclick="editFile('${f.path}')">编辑</button>
+        <button class="del-btn" onclick="deleteFile('${f.path}', '${f.sha}', this)">删除</button>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="loading">加载失败：' + e.message + '</div>';
+  }
+}
+
+async function deleteFile(path, sha, btn) {
+  if (!confirm('确定删除 ' + path.split('/').pop() + '？删除后不可恢复。')) return;
+  const token = getToken();
+  if (!token) { alert('请先设置 Token'); return; }
+
+  btn.textContent = '删除中…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+      method: 'DELETE',
+      headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `删除 ${path.split('/').pop()}`, sha, branch: 'main' })
+    });
+    if (res.ok) {
+      btn.closest('.post-item').remove();
+      document.getElementById('msg').textContent = '已删除，1 分钟后网站更新。';
+    } else {
+      const err = await res.json();
+      alert('删除失败：' + (err.message || res.status));
+      btn.textContent = '删除';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    alert('网络错误：' + e.message);
+    btn.textContent = '删除';
+    btn.disabled = false;
+  }
+}
+
+function editFile(path) {
+  window.open(`https://github.com/${REPO}/edit/main/${path}`, '_blank');
+}
+
+// Load on start
+loadFolder('_posts');
+</script>
+</body>
+</html>
