@@ -111,6 +111,7 @@ permalink: /write/
   <!-- ═══ 日课 ═══ -->
   <div class="form-section active" id="form-daily">
     <h3 class="sec">必填</h3>
+    <label class="field"><span>日期</span><input type="date" id="d-date"></label>
     <div class="row">
       <label class="field"><span>昨晚入睡</span><input type="time" id="d-sleep"></label>
       <label class="field"><span>今天起床</span><input type="time" id="d-wake"></label>
@@ -230,6 +231,8 @@ function saveToken() {
   if (t) { localStorage.setItem('gh_token', t); document.getElementById('setup').style.display = 'none'; alert('Token 已保存！'); }
 }
 if (getToken()) document.getElementById('setup').style.display = 'none';
+// Default date to today
+document.getElementById('d-date').value = now().ds;
 
 function now() {
   const d = new Date();
@@ -240,7 +243,8 @@ function now() {
 function val(id) { return (document.getElementById(id)?.value || '').trim(); }
 
 function buildDaily() {
-  const { mm, dd, ds } = now();
+  const ds = val('d-date') || now().ds;
+  const [, mm, dd] = ds.split('-').map(Number);
   let md = `---\nlayout: post\ntitle: "${mm}月${dd}日"\ndate: ${ds}\ncategory: 日课\n---\n\n`;
   md += `## 睡眠记录\n\n昨晚入睡：${val('d-sleep')||'?'}\n\n今天起床：${val('d-wake')||'?'}\n\n`;
   md += `睡眠质量：${val('d-sq')}\n\n精神状态：${val('d-energy')}\n\n`;
