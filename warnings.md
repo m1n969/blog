@@ -31,10 +31,6 @@ permalink: /warnings/
 
 <span class="warn-tag mian">勉</span> 畏难之时，只取第一步。
 
-> 具体问题：害怕 GitHub 太复杂，所以没有开始。
->
-> 重复模式：想到整个流程就瘫痪，其实只需要做第一步。
-
 ---
 
 <!-- 格式：
