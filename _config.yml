@@ -1,0 +1,28 @@
+title: 不断线
+description: 一个公开的日课与反省录
+tagline: 不求漂亮，只求不断。
+author: shrimp
+url: ""
+baseurl: ""
+
+markdown: kramdown
+permalink: /:year/:month/:day/:title/
+
+defaults:
+  - scope:
+      path: "_posts"
+      type: posts
+    values:
+      layout: post
+      category: 日课
+
+plugins:
+  - jekyll-seo-tag
+
+collections:
+  weekly:
+    output: true
+    permalink: /weekly/:title/
+  monthly:
+    output: true
+    permalink: /monthly/:title/

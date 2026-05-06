@@ -1,0 +1,86 @@
+---
+layout: default
+title: 日课
+---
+
+{% comment %} ── 统计 ── {% endcomment %}
+{% assign total = site.posts | where_exp: "p", "p.category == '日课' or p.categories contains '日课'" | size %}
+{% if total == 0 %}
+  {% assign total = site.posts.size %}
+{% endif %}
+
+{% assign this_month = site.time | date: "%Y-%m" %}
+{% assign month_count = 0 %}
+{% for post in site.posts %}
+  {% assign post_month = post.date | date: "%Y-%m" %}
+  {% if post_month == this_month %}
+    {% assign month_count = month_count | plus: 1 %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} ── 连续天数（简化计算：从最近一篇往前数连续日期） ── {% endcomment %}
+{% assign streak = 0 %}
+{% assign today_stamp = site.time | date: "%s" | plus: 0 %}
+{% assign check_stamp = today_stamp %}
+{% for post in site.posts %}
+  {% assign post_stamp = post.date | date: "%s" | plus: 0 %}
+  {% assign diff = check_stamp | minus: post_stamp %}
+  {% if diff < 172800 %}
+    {% assign streak = streak | plus: 1 %}
+    {% assign check_stamp = post_stamp | minus: 86400 %}
+  {% else %}
+    {% break %}
+  {% endif %}
+{% endfor %}
+
+<div class="index-stats">
+  <div class="stat">
+    <div class="stat-num">{{ total }}</div>
+    <div class="stat-label">累计日课</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">{{ month_count }}</div>
+    <div class="stat-label">本月记录</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">{{ streak }}</div>
+    <div class="stat-label">连续天数</div>
+  </div>
+</div>
+
+{% comment %} ── 最近一篇 ── {% endcomment %}
+{% if site.posts.size > 0 %}
+<div class="latest-entry">
+  <div class="latest-label">最近一篇</div>
+  <a href="{{ site.posts.first.url | relative_url }}" class="latest-title">{{ site.posts.first.title }}</a>
+  <div class="latest-date">{{ site.posts.first.date | date: "%Y年%m月%d日" }}</div>
+  {% if site.posts.first.excerpt %}
+  <div class="latest-excerpt">{{ site.posts.first.excerpt | strip_html | truncate: 100 }}</div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% comment %} ── 固定提醒 ── {% endcomment %}
+<div class="index-reminder">
+  <p>断了也可以继续，不必补罪。</p>
+  <p>无事也可记。无事之日，最见本性。</p>
+  <p>写一句也算一日。</p>
+</div>
+
+{% comment %} ── 最近日课 ── {% endcomment %}
+{% if site.posts.size > 0 %}
+<div class="section-label">最近日课</div>
+<ul class="post-list">
+  {% for post in site.posts limit:10 %}
+  <li>
+    <a href="{{ post.url | relative_url }}" class="post-title">{{ post.title }}</a>
+    <time>{{ post.date | date: "%m/%d" }}</time>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div style="padding: 40px 0; color: #bbb; text-align: center;">
+  <p>还没有日课。</p>
+  <p style="font-size: 14px;">在 _posts 文件夹里写第一篇吧。</p>
+</div>
+{% endif %}

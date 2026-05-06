@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} — {% endif %}{{ site.title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="{{ '/' | relative_url }}" class="site-title">{{ site.title }}</a>
+      <div class="site-tagline">{{ site.tagline }}</div>
+      <nav class="site-nav">
+        <a href="{{ '/' | relative_url }}">日课</a>
+        <a href="{{ '/archive' | relative_url }}">日课档案</a>
+        <a href="{{ '/weekly' | relative_url }}">周省</a>
+        <a href="{{ '/monthly' | relative_url }}">月省</a>
+        <a href="{{ '/warnings' | relative_url }}">自警录</a>
+        <a href="{{ '/notes' | relative_url }}">札记</a>
+        <a href="{{ '/prompts' | relative_url }}">不知道写什么</a>
+        <a href="{{ '/about' | relative_url }}">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {{ content }}
+  </main>
+
+  <footer class="container">
+    <p>{{ site.title }} · {{ site.tagline }}</p>
+  </footer>
+</body>
+</html>
