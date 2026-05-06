@@ -2,8 +2,8 @@ title: 不断线
 description: 一个公开的日课与反省录
 tagline: 不求漂亮，只求不断。
 author: shrimp
-url: "https://m1n969.github.io"
-baseurl: "/blog"
+url: "https://shrimpdiary.com"
+baseurl: ""
 
 markdown: kramdown
 permalink: /:year/:month/:day/:title/
