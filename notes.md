@@ -8,7 +8,7 @@ permalink: /notes/
 
 # 札记
 
-不是日课，不是周省，就是偶尔想写的东西。
+
 
 {% assign notes = site.posts | where: "category", "札记" %}
 {% if notes.size > 0 %}
